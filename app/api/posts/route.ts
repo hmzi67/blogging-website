@@ -2,7 +2,7 @@ import { db, storage } from "@/firebase";
 import { collection, addDoc, getDocs, getDoc, doc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-export async function fetchBlogById(id: string) {
+export default async function fetchBlogById(id: string) {
   const blogRef = doc(db, "posts", id);
   const blogSnap = await getDoc(blogRef);
 
