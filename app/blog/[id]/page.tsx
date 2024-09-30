@@ -1,6 +1,6 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
-import fetchBlogById  from '@/app/api/posts/route';
+import { fetchBlogById } from '@/app/api/posts/blogUtils'; // Import from the new utility file
 
 
 const BlogDetail = async ({ params }: { params: { id: string } }) => {

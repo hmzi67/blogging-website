@@ -2,68 +2,52 @@ import { db, storage } from "@/firebase";
 import { collection, addDoc, getDocs, getDoc, doc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-export default async function fetchBlogById(id: string) {
-  const blogRef = doc(db, "posts", id);
-  const blogSnap = await getDoc(blogRef);
-
-  if (blogSnap.exists()) {
-    return { id: blogSnap.id, ...blogSnap.data() }; // Return the blog data with ID
-  } else {
-    return null; // Return null if the blog does not exist
-  }
-}
-
 export async function POST(request: Request) {
   try {
-    // Check if the request is a form data request
     const contentType = request.headers.get("Content-Type");
     let body;
 
     if (contentType && contentType.includes("multipart/form-data")) {
-      // Handle FormData
       const formData = await request.formData();
       const title = formData.get("title");
       const content = formData.get("content");
-      const image = formData.get("image") as File; // Type assertion for File
+      const image = formData.get("image") as File;
 
       if (!title || !content || !image) {
         return new Response("Missing fields in the request", { status: 400 });
       }
 
-      // Handle Image Upload
       const imageRef = ref(storage, `images/${image.name}`);
-      await uploadBytes(imageRef, image); // Upload image to Storage
-      const imageUrl = await getDownloadURL(imageRef); // Get image URL
+      await uploadBytes(imageRef, image);
+      const imageUrl = await getDownloadURL(imageRef);
 
       const docRef = await addDoc(collection(db, "posts"), {
         title,
         content,
-        imageUrl, // Save the image URL
+        imageUrl,
         createdAt: new Date().toISOString(),
       });
 
       return new Response(JSON.stringify({ id: docRef.id }), { status: 201 });
     } else {
-      // Handle JSON requests (if you still want to support it)
       body = await request.json();
-      const { title, content, image } = body; // Include image URL
+      const { title, content, image } = body;
 
       if (!title || !content || !image) {
         return new Response("Missing fields in the request", { status: 400 });
       }
 
-      // Assuming image is a URL string in JSON, you may need to adapt this part accordingly
       const docRef = await addDoc(collection(db, "posts"), {
         title,
         content,
-        imageUrl: image, // Directly use the image URL
+        imageUrl: image,
         createdAt: new Date().toISOString(),
       });
 
       return new Response(JSON.stringify({ id: docRef.id }), { status: 201 });
     }
   } catch (error: any) {
-    console.error("Error adding document:", error); // Log the error for debugging
+    console.error("Error adding document:", error);
     return new Response("Error adding document: " + error.message, {
       status: 500,
     });
